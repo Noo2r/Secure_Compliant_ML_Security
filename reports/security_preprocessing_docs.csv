@@ -1,0 +1,6 @@
+Step,Description
+Data Loading,Merged transaction and identity data
+Classification,Identified PII and sensitive columns
+Encryption,Encrypted PII using Fernet
+Access Control,Defined RBAC policies
+Storage,Stored encrypted dataset securely

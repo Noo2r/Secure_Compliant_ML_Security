@@ -1,0 +1,17 @@
+data/
+test_transaction.csv
+test_identity.csv
+sample_submission.csv
+secret.key
+.env/
+.vscode/
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+
+# Milestone 2 (ML Engineer / Risk Analyst) generated artifacts
+logs/
+.pytest_cache/
+mlruns/
+mlartifacts/
+*.egg-info/

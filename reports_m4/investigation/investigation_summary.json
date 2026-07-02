@@ -1,0 +1,12 @@
+{
+  "best_l2_norm_clip": 20.0,
+  "best_class_weight_positive": 38.04724716907458,
+  "best_learning_rate": 0.0015304852121831463,
+  "best_roc_auc_on_exploration_val": 0.29551370787660236,
+  "exploration_sample_size": 100000,
+  "original_config": {
+    "l2_norm_clip": 1.0,
+    "class_weight_positive": 38.04724716907458,
+    "learning_rate": 0.0015304852121831463
+  }
+}

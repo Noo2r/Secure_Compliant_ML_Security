@@ -1,0 +1,4 @@
+Item,Description
+Encryption Key,Fernet key
+Storage Location,Azure Key Vault
+Access,Security Engineer only

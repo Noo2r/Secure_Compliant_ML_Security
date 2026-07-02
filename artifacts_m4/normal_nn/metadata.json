@@ -1,0 +1,19 @@
+{
+  "variant": "normal",
+  "dataset_version": "e457d0eb2c3b9e45",
+  "architecture_params": {
+    "n_layers": 1,
+    "units": 64,
+    "dropout": 0.2571172192068058,
+    "learning_rate": 0.0015304852121831463,
+    "batch_size": 256,
+    "epochs": 11
+  },
+  "batch_size": 256,
+  "epochs": 11,
+  "train_seconds": 14.875756699941121,
+  "random_state": 42,
+  "saved_at_utc": "2026-07-01T20:31:00.926682+00:00",
+  "privacy_params": null,
+  "privacy_budget": null
+}

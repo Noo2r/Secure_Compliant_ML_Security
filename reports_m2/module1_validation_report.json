@@ -1,0 +1,60 @@
+{
+  "passed": true,
+  "generated_at_utc": "2026-07-01T13:03:15.368312+00:00",
+  "checks": [
+    {
+      "name": "row_count_positive",
+      "severity": "critical",
+      "passed": true,
+      "message": "row_count=590540"
+    },
+    {
+      "name": "required_columns_present",
+      "severity": "critical",
+      "passed": true,
+      "message": "all required columns present"
+    },
+    {
+      "name": "dtype_contract",
+      "severity": "critical",
+      "passed": true,
+      "message": "all dtypes match contract"
+    },
+    {
+      "name": "no_duplicate_rows",
+      "severity": "critical",
+      "passed": true,
+      "message": "duplicate_rows=0 (max_allowed=0)"
+    },
+    {
+      "name": "merge_key_unique",
+      "severity": "critical",
+      "passed": true,
+      "message": "duplicate TransactionID values after merge: 0"
+    },
+    {
+      "name": "target_binary",
+      "severity": "critical",
+      "passed": true,
+      "message": "unique target values: [0, 1]"
+    },
+    {
+      "name": "missing_value_ceiling",
+      "severity": "warning",
+      "passed": true,
+      "message": "no columns exceed ceiling"
+    },
+    {
+      "name": "pii_columns_encrypted",
+      "severity": "critical",
+      "passed": true,
+      "message": "all PII columns encrypted"
+    },
+    {
+      "name": "lineage_consistency",
+      "severity": "warning",
+      "passed": true,
+      "message": "regenerated column-drop count matches Yara's data_lineage.csv"
+    }
+  ]
+}

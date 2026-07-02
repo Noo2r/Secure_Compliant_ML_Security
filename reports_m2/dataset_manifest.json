@@ -1,0 +1,36 @@
+{
+  "mode": "load_existing",
+  "generated_at_utc": "2026-07-01T13:03:04.400678+00:00",
+  "row_count": 590540,
+  "column_count": 428,
+  "dropped_column_count": -1,
+  "dropped_columns": [],
+  "pii_columns": [
+    "CustomerName",
+    "Email",
+    "PhoneNumber",
+    "Address",
+    "NationalID"
+  ],
+  "sensitive_columns": [
+    "addr1",
+    "addr2",
+    "P_emaildomain",
+    "R_emaildomain",
+    "DeviceInfo"
+  ],
+  "encrypted_columns": [
+    "CustomerName",
+    "Email",
+    "PhoneNumber",
+    "Address",
+    "NationalID",
+    "CreditCardNumber"
+  ],
+  "target_column": "isFraud",
+  "source_file_hashes": {
+    "C:\\Users\\LOQ\\OneDrive - Arab Academy for Science and Technology\\DEPI Grad Project\\Secure-Compliant-ML-Security--main\\Secure-Compliant-ML-Security--main\\data\\encrypted\\encrypted_dataset.csv": "e457d0eb2c3b9e45f07e916a33ae329e971598c3cbf53cd4e50db11589a0bf6c"
+  },
+  "dataset_version": "e457d0eb2c3b9e45",
+  "lineage_check_passed": true
+}

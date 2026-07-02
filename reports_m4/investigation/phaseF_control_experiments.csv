@@ -1,0 +1,5 @@
+experiment,description,roc_auc,pr_auc,pred_mean,notes
+split_control_normal_nn,"Normal (non-DP) NN trained on the SAME 100K-row exploration subsample and evaluated on the SAME validation slice used throughout the investigation",0.7451,0.1022,0.36253,"Rules out temporal split/subsample artifact as the cause -- normal training on identical data/split is healthy"
+seed_sensitivity_seed1,"DP NN at best config (clip=20, cw=38.05, lr=0.00153, nm=1.1) with random_state=1",0.2873,,,"3 different seeds cluster tightly (0.287-0.299) -- rules out random-noise-driven variance as the explanation"
+seed_sensitivity_seed7,"DP NN at best config with random_state=7",0.2994,,,"See above"
+seed_sensitivity_seed99,"DP NN at best config with random_state=99",0.2875,,,"See above"

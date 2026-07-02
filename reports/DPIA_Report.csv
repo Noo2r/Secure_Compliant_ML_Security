@@ -1,0 +1,4 @@
+Risk,Mitigation
+PII exposure,Encryption
+Unauthorized access,Access control
+Data leakage,Private storage

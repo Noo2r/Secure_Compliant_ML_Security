@@ -1,0 +1,14 @@
+Column,Classification
+CustomerName,PII
+Email,PII
+PhoneNumber,PII
+Address,PII
+NationalID,PII
+CreditCardNumber,Financial
+TransactionAmt,Financial
+addr1,Sensitive
+addr2,Sensitive
+P_emaildomain,Sensitive
+R_emaildomain,Sensitive
+DeviceInfo,Sensitive
+isFraud,Target

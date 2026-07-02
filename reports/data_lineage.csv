@@ -1,0 +1,6 @@
+Step,Description
+Raw Dataset,train_transaction.csv + train_identity.csv
+Merged Dataset,Merged on TransactionID
+Columns Removed,12
+PII Columns,"['CustomerName', 'Email', 'PhoneNumber', 'Address', 'NationalID', 'CreditCardNumber']"
+Encryption,Fernet (AES-128)

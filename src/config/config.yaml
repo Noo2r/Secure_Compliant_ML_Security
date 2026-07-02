@@ -1,0 +1,245 @@
+# =============================================================================
+# Milestone 2 — Model Development & Risk Analysis
+# Central configuration file (single source of truth for all M2 modules).
+# No secrets are stored here. Azure ML fields are placeholders until the
+# real workspace credentials are supplied via environment variables.
+# =============================================================================
+
+project:
+  name: "secure-compliant-ml-security"
+  milestone: "Milestone 2 - Model Development & Risk Analysis"
+  owner: "Nour El-Din Ahmed"
+  random_seed: 42
+
+paths:
+  raw_transaction_csv: "data/raw/train_transaction.csv"
+  raw_identity_csv: "data/raw/train_identity.csv"
+  encrypted_dataset_csv: "data/encrypted/encrypted_dataset.csv"
+  encryption_key_file: "secret.key"
+  processed_dir: "data/processed"
+  reports_dir: "reports"          # Yara's Milestone 1 reports (read-only for M2)
+  reports_m2_dir: "reports_m2"    # Milestone 2 reports (owned by this module)
+  logs_dir: "logs"
+  dataset_manifest_json: "reports_m2/dataset_manifest.json"
+  processed_train_csv: "data/processed/train.csv"
+  processed_test_csv: "data/processed/test.csv"
+  feature_manifest_json: "reports_m2/feature_manifest.json"
+  artifacts_m2_dir: "artifacts_m2"   # fitted, joblib-persisted pipeline objects (inference-ready)
+
+# Yara's Milestone 1 deliverables consumed by this milestone.
+# These files are treated as read-only contracts; M2 never writes to them.
+upstream_milestone1:
+  data_classification_csv: "reports/data_classification.csv"
+  data_lineage_csv: "reports/data_lineage.csv"
+  access_control_csv: "reports/access_control.csv"
+  key_management_csv: "reports/key_management.csv"
+  dpia_report_csv: "reports/DPIA_Report.csv"
+  expected_columns_dropped: 12          # sanity check against data_lineage.csv
+  missing_value_drop_threshold_pct: 90  # must match Yara's notebook threshold
+
+secure_data:
+  # "load_existing": read paths.encrypted_dataset_csv as-is (use once Yara
+  #                   supplies her actual Milestone 1 artifact).
+  # "regenerate":     reproduce Yara's merge/PII-injection/encryption steps
+  #                   from the raw CSVs when her artifact is unavailable.
+  mode: "load_existing"
+  faker_seed: 42
+  merge_key: "TransactionID"
+  target_column: "isFraud"
+
+validation:
+  max_allowed_duplicate_rows: 0
+  max_column_missing_pct_warning: 95.0
+  required_dtypes:
+    TransactionID: "int"
+    isFraud: "int"
+    TransactionDT: "int"
+    TransactionAmt: "float"
+
+feature_engineering:
+  email_domain_top_n: 15
+  missing_indicator_min_missing_pct: 5.0
+  card_velocity_group_col: "card1"
+
+feature_selection:
+  near_zero_variance_freq_threshold: 0.999
+  correlation_redundancy_threshold: 0.95
+  ranking_sample_size: 50000
+  top_k_final_features: 150
+
+train_test_split:
+  strategy: "time_aware"   # "time_aware" | "stratified_random"
+  test_size: 0.2
+
+fairness:
+  primary_sensitive_attribute: "card6"   # debit vs credit (0.27% missing, 2.75x fraud-rate disparity)
+  secondary_sensitive_attribute: "card4" # visa/mastercard/amex/discover (exploratory)
+  excluded_candidate_attribute: "DeviceType"  # 76% missing -> unreliable, documented as a limitation
+
+metadata:
+  # Columns preserved through the ENTIRE pipeline as non-feature auxiliary
+  # data: excluded from model.fit() input, but retained unmodified in every
+  # processed output for traceability, auditing, explainability, incident
+  # investigation, and fairness slicing -- regardless of whether feature
+  # selection independently chose to keep or drop them as model features.
+  preserved_columns:
+    - "TransactionID"
+    - "card6"
+    - "card4"
+    - "DeviceType"
+
+logging:
+  level: "INFO"
+  file_name: "milestone2.log"
+  max_bytes: 5242880   # 5 MB
+  backup_count: 3
+
+azure_ml:
+  # Placeholders only. Populated at runtime from environment variables:
+  # AZURE_SUBSCRIPTION_ID, AZURE_RESOURCE_GROUP, AZURE_ML_WORKSPACE
+  subscription_id: "${AZURE_SUBSCRIPTION_ID}"
+  resource_group: "${AZURE_RESOURCE_GROUP}"
+  workspace_name: "${AZURE_ML_WORKSPACE}"
+  model_registry_name: "fraud-detection-model"
+
+mlflow:
+  # MLflow 3.x deprecated the plain filesystem store ("file:./mlruns") --
+  # SQLite is the currently-recommended lightweight backend and supports the
+  # full feature set (vs. opting out via MLFLOW_ALLOW_FILE_STORE).
+  tracking_uri: "sqlite:///mlruns/mlflow.db"
+  experiment_name: "milestone2-fraud-detection"
+
+model_development:
+  # Reduced trial/fold counts relative to a full production search -- an
+  # explicit, documented tractability trade-off (same rationale as Module 2's
+  # ranking_sample_size), not a silent shortcut. Increase with more compute.
+  candidate_models: ["logistic_regression", "random_forest", "xgboost", "lightgbm", "neural_network"]
+  cv_folds: 3                      # TimeSeriesSplit folds used during Optuna tuning
+  tuning_sample_size: 100000       # rows sampled (stratified within time order) for tuning; final refit uses full train
+  optuna_trials:
+    logistic_regression: 20
+    random_forest: 20
+    xgboost: 25
+    lightgbm: 25
+    neural_network: 10
+  optuna_timeout_seconds: 600      # per-model wall-clock safety cap (should rarely trigger; see model_registry.py's
+                                    # LogisticRegression max_iter comment for the non-convergence issue this guards against)
+  primary_metric: "pr_auc"         # leaderboard ranking metric
+  tie_break_relative_tolerance: 0.01   # 1% relative PR-AUC -> prefer simpler/faster model
+  learning_curve_train_sizes: [0.1, 0.25, 0.5, 0.75, 1.0]   # best model only
+  validation_curve_points: 6                                 # best model only
+
+operational_metrics:
+  precision_threshold: 0.90        # for "recall at fixed precision >= X%"
+  top_k_values: [100, 500, 1000, 5000]   # for Precision@Top-K and lift/gain
+
+threshold_optimization:
+  strategy: "max_f1"                # "max_f1" | "recall_at_precision"
+  min_precision: 0.5                 # floor used only when strategy == "recall_at_precision"
+  validation_fraction_of_train: 0.15 # slice of TRAIN (never test) used to pick the threshold
+
+paths_m3:
+  artifacts_m3_dir: "artifacts_m3"
+  reports_m3_dir: "reports_m3"
+
+differential_privacy:
+  # Layer architecture (n_layers/units/dropout/learning_rate) is read at
+  # runtime from Module 3's ALREADY-TUNED Neural Network hyperparameters
+  # (reports_m3/model_comparison_leaderboard.csv), not duplicated here, so
+  # the Normal-vs-DP comparison is a fair test of "what does adding DP-SGD
+  # cost", not confounded by also changing the architecture. batch_size and
+  # epochs below default to Module 3's tuned values (256, 11) for the same
+  # fairness reason, but are independently configurable here per the
+  # requirement that they be config-driven.
+  batch_size: 256
+  epochs: 11
+  # Empirically best value found by the post-hoc Module 4 investigation
+  # (scripts/run_module4_investigation.py): a controlled l2_norm_clip sweep
+  # [0.5, 1, 2, 5, 10, 20, 50] at fixed noise_multiplier/class_weight/
+  # learning_rate found 20.0 gave the (small, not fully corrective) best
+  # ROC-AUC. Raising this from the original 1.0 is a real, measured
+  # improvement, NOT a full fix -- see reports_m4/investigation/ for the
+  # full root-cause analysis, which found gradient clipping's interaction
+  # with severe class imbalance (not clip magnitude alone, and not noise
+  # alone) is the dominant bottleneck.
+  l2_norm_clip: 20.0
+  noise_multiplier: 1.1      # Gaussian noise stddev relative to l2_norm_clip
+  # Must evenly divide batch_size. Per TF-Privacy's own semantics (verified
+  # against its source, not assumed): num_microbatches=batch_size means each
+  # microbatch is exactly 1 example -- TRUE per-example gradient clipping,
+  # the standard DP-SGD formulation (Abadi et al. 2016). num_microbatches=1
+  # would instead average the WHOLE batch before a single clip+noise step --
+  # much weaker privacy, not real per-example DP-SGD. Defaulting to
+  # batch_size (256) for the standard, strongest formulation.
+  microbatches: 256
+  delta: 1.0e-5               # standard choice: delta < 1/N for N ~ 400K training examples
+  # Sweep used ONLY for the privacy-utility curve (Section 8 of the brief) --
+  # each point is a full DP training run, so kept short for tractability.
+  noise_multiplier_sweep: [0.6, 0.8, 1.1, 1.5, 2.0]
+
+paths_m4:
+  artifacts_m4_dir: "artifacts_m4"
+  reports_m4_dir: "reports_m4"
+
+fairness_analysis:
+  # Primary model analyzed: Module 3's LightGBM (the deployed production
+  # model). The Module 4 DP model is analyzed only as an optional secondary
+  # comparison -- see run_module5.py.
+  primary_model: "lightgbm"
+  include_dp_model_comparison: true
+
+  # Protected/proxy attributes. NONE of these are true demographic
+  # attributes -- IEEE-CIS has none. All are documented financial/behavioral
+  # proxies (see reports_m5/fairness_report.md's "Proxy Limitations"
+  # section). Sourced from Module 2's preserved metadata columns
+  # (feature_manifest.json's metadata_columns), already present in
+  # data/processed/test.csv with no new data loading required.
+  protected_attributes:
+    - name: "card6"
+      description: "Card funding type (debit vs credit) -- a payment-behavior proxy, not a demographic attribute."
+      reference_group: "debit"   # largest group; "reference" is a statistical baseline label, not a real-world privilege claim
+      primary: true
+    - name: "card4"
+      description: "Card network (visa/mastercard/discover/amex) -- a payment-behavior proxy. Discover/Amex are small subgroups (~1,100-1,250 rows in the test set); report with reduced-confidence caveats, do not suppress."
+      reference_group: "visa"    # largest group
+      primary: false
+    - name: "DeviceType"
+      description: "Device used (desktop/mobile) -- 80.4% missing in the test set (verified, worse than Module 2's 76% full-dataset figure). Excluded from primary analysis; reported only as a documented limitation, consistent with Module 2's original excluded_candidate_attribute decision."
+      reference_group: "desktop"
+      primary: false
+      excluded_from_primary_analysis: true
+
+  fairness_thresholds:
+    disparate_impact_low: 0.8    # four-fifths rule lower bound
+    disparate_impact_high: 1.25  # four-fifths rule upper bound (symmetric)
+    max_acceptable_spd: 0.10     # |Statistical Parity Difference| beyond this is flagged
+    max_acceptable_eod: 0.10     # |Equal Opportunity Difference| beyond this is flagged
+    max_acceptable_aod: 0.10     # |Average Odds Difference| beyond this is flagged
+
+  statistics:
+    bootstrap_iterations: 1000
+    bootstrap_confidence_level: 0.95
+    significance_alpha: 0.05
+    # Cochran's rule: chi-square is valid when at least 80% of contingency
+    # table cells have expected count >= 5; otherwise fall back to Fisher's
+    # exact test (2x2 tables only -- multi-group tables use chi-square with
+    # this validity caveat explicitly reported, since scipy has no
+    # multi-group exact test built in).
+    min_expected_cell_count_for_chi_square: 5.0
+    random_state: 42
+
+  fairlearn_validation:
+    # Cross-checks a subset of this module's own metrics (statistical parity
+    # difference, disparate impact ratio, selection rate) against fairlearn's
+    # independent implementation on the real data. Skipped gracefully (not a
+    # hard failure) if fairlearn is not installed.
+    enabled: true
+    tolerance: 1.0e-6   # max allowed absolute difference between the two implementations
+
+  plots:
+    dpi: 120
+    top_n_features_shown: 25
+
+paths_m5:
+  artifacts_m5_dir: "artifacts_m5"
+  reports_m5_dir: "reports_m5"

@@ -1,0 +1,18 @@
+{
+  "comparable": true,
+  "model_a": "lightgbm",
+  "model_b": "xgboost",
+  "cv_scores_a": [
+    0.4952926353849666,
+    0.5188317897023251,
+    0.5319055507540911
+  ],
+  "cv_scores_b": [
+    0.46981216157308336,
+    0.5106995114268627,
+    0.5055462677776508
+  ],
+  "wilcoxon_statistic": 0.0,
+  "p_value": 0.25,
+  "significant_at_0.05": false
+}

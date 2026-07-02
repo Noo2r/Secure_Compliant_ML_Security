@@ -1,0 +1,12 @@
+{
+  "model_analyzed": "lightgbm",
+  "dataset_version": "e457d0eb2c3b9e45",
+  "attributes_analyzed": [
+    "card6",
+    "card4",
+    "DeviceType"
+  ],
+  "total_bias_findings": 24,
+  "critical_findings": 0,
+  "warning_findings": 12
+}

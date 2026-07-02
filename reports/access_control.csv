@@ -1,0 +1,4 @@
+Role,Permissions
+Data Security Engineer,"['Read', 'Encrypt', 'Write']"
+ML Engineer,['Read Encrypted Data']
+Compliance Officer,['Read Reports']
