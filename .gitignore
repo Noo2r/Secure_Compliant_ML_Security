@@ -4,6 +4,7 @@ test_identity.csv
 sample_submission.csv
 secret.key
 .env/
+.env
 .vscode/
 __pycache__/
 *.pyc
@@ -15,3 +16,9 @@ logs/
 mlruns/
 mlartifacts/
 *.egg-info/
+
+# Milestone 3 (Security & DevSecOps) local-only files
+iac/terraform/**/.terraform/
+iac/terraform/**/*.tfstate
+iac/terraform/**/*.tfstate.*
+iac/terraform/**/terraform.tfvars

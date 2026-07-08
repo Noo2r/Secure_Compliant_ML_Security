@@ -1,0 +1,27 @@
+fastapi==0.111.0
+uvicorn[standard]==0.30.1
+pydantic==2.7.4
+pydantic-settings==2.3.4
+python-jose[cryptography]==3.3.0
+passlib[bcrypt]==1.7.4
+# passlib 1.7.4's bcrypt backend probes bcrypt.__about__.__version__, which
+# bcrypt>=4.1 removed -- an unpinned `pip install` pulls the latest bcrypt
+# and passlib's own self-test crashes at import time (surfaces as a bogus
+# "password cannot be longer than 72 bytes" ValueError). Found running this
+# service locally during integration; pinning here so it doesn't recur in
+# the Docker build either.
+bcrypt==4.0.1
+python-multipart==0.0.9
+azure-identity==1.16.1
+azure-keyvault-secrets==4.8.0
+slowapi==0.1.9
+joblib==1.4.2
+scikit-learn==1.5.0
+numpy==1.26.4
+pandas==2.2.2
+python-dotenv==1.0.1
+# Needed to unpickle/score Nour El-Din's real trained model
+# (artifacts_m3/lightgbm_inference_bundle.joblib) — the estimator inside the
+# InferenceBundle is a lightgbm.LGBMClassifier. Pinned to the version it was
+# actually trained with (see requirements-milestone2.txt: lightgbm>=4.3).
+lightgbm==4.6.0
