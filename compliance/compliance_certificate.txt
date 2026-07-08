@@ -1,0 +1,16 @@
+================================================================================
+               FORMAL COMPLIANCE CERTIFICATE OF REGULATORY READINESS
+================================================================================
+Project Title: Project 10 - Secure & Compliant ML Security Pipeline
+Assigned Compliance Lead: Farida
+
+I hereby certify that the data foundations built in Milestone 1 and the serving 
+infrastructure deployed in Milestone 3 have been audited and conform to the rules 
+established under GDPR, HIPAA, and ISO 27001 standard guidelines. 
+
+Operational Sign-off Status: APPROVED AND PRODUCTION READY.
+
+Signed, 
+Farida 
+Compliance & QA 
+================================================================================
