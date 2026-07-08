@@ -60,9 +60,10 @@ jobs:
     # that doesn't exist in a real GitHub Actions checkout.
 
     outputs:
-      drift_status: ${{ steps.read-status.outputs.drift_status }}
-      n_drifted:    ${{ steps.read-status.outputs.n_drifted }}
-      drift_share:  ${{ steps.read-status.outputs.drift_share }}
+      drift_status:  ${{ steps.read-status.outputs.drift_status }}
+      n_drifted:     ${{ steps.read-status.outputs.n_drifted }}
+      drift_share:   ${{ steps.read-status.outputs.drift_share }}
+      used_synthetic: ${{ steps.read-status.outputs.used_synthetic }}
 
     steps:
       - name: Checkout repository
@@ -160,15 +161,18 @@ jobs:
             DRIFT_STATUS=$(python -c "import json; d=json.load(open('$STATUS_FILE')); print(d.get('overall_status','unknown'))")
             N_DRIFTED=$(python -c "import json; d=json.load(open('$STATUS_FILE')); print(d.get('n_drifted_features',0))")
             DRIFT_SHARE=$(python -c "import json; d=json.load(open('$STATUS_FILE')); print(d.get('drift_share',0.0))")
+            USED_SYNTHETIC=$(python -c "import json; d=json.load(open('$STATUS_FILE')); print(str(d.get('synthetic_data_used', False)).lower())")
           else
             DRIFT_STATUS="unknown"
             N_DRIFTED="0"
             DRIFT_SHARE="0.0"
+            USED_SYNTHETIC="unknown"
           fi
-          echo "drift_status=$DRIFT_STATUS"  >> $GITHUB_OUTPUT
-          echo "n_drifted=$N_DRIFTED"        >> $GITHUB_OUTPUT
-          echo "drift_share=$DRIFT_SHARE"    >> $GITHUB_OUTPUT
-          echo "Drift status: $DRIFT_STATUS  |  Drifted features: $N_DRIFTED  |  Share: $DRIFT_SHARE"
+          echo "drift_status=$DRIFT_STATUS"      >> $GITHUB_OUTPUT
+          echo "n_drifted=$N_DRIFTED"            >> $GITHUB_OUTPUT
+          echo "drift_share=$DRIFT_SHARE"        >> $GITHUB_OUTPUT
+          echo "used_synthetic=$USED_SYNTHETIC"  >> $GITHUB_OUTPUT
+          echo "Drift status: $DRIFT_STATUS  |  Drifted features: $N_DRIFTED  |  Share: $DRIFT_SHARE  |  Synthetic data: $USED_SYNTHETIC"
 
       - name: Upload drift reports as GitHub artifacts
         uses: actions/upload-artifact@v4
@@ -187,9 +191,13 @@ jobs:
       - name: Fail pipeline on critical drift
         if: steps.drift-run.outcome == 'failure'
         run: |
-          echo "::error title=Critical Drift Detected::The drift monitor returned exit code 1."
-          echo "Review reports_m5/drift_report.html and consider retraining the LightGBM model."
-          exit 1
+          if [ "${{ steps.read-status.outputs.used_synthetic }}" = "true" ]; then
+            echo "::warning title=Critical Drift on Synthetic Data::drift_monitor.py compared two independently-generated synthetic datasets (data/processed/*.csv is gitignored and not present in this checkout), not real production data. A 'critical' result here reflects synthetic sampling noise, not real model drift -- it is not actionable and does not indicate a problem with the LightGBM model. Report uploaded for visibility only; not failing the pipeline."
+          else
+            echo "::error title=Critical Drift Detected::The drift monitor compared real processed data and detected critical drift."
+            echo "Review reports_m5/drift_report.html and consider retraining the LightGBM model."
+            exit 1
+          fi
 
   # ---------------------------------------------------------------------------
   # JOB 2 — WORM STORAGE UPLOAD (main branch only)
@@ -267,24 +275,35 @@ jobs:
     steps:
       - name: Post drift summary to job summary
         env:
-          DRIFT_STATUS: ${{ needs.drift-monitor.outputs.drift_status }}
-          N_DRIFTED:    ${{ needs.drift-monitor.outputs.n_drifted }}
-          DRIFT_SHARE:  ${{ needs.drift-monitor.outputs.drift_share }}
+          DRIFT_STATUS:   ${{ needs.drift-monitor.outputs.drift_status }}
+          N_DRIFTED:      ${{ needs.drift-monitor.outputs.n_drifted }}
+          DRIFT_SHARE:    ${{ needs.drift-monitor.outputs.drift_share }}
+          USED_SYNTHETIC: ${{ needs.drift-monitor.outputs.used_synthetic }}
         run: |
           # Write a structured summary to the GitHub Actions job summary page.
+          if [ "$USED_SYNTHETIC" = "true" ]; then
+            DATA_NOTE="⚠️ **Synthetic data** — data/processed/*.csv is gitignored and not present in this checkout, so this run compared two independently-generated synthetic datasets. A CRITICAL result here is sampling noise, not real model drift, and is NOT actionable."
+          else
+            DATA_NOTE="✅ Real processed data (data/processed/train.csv vs test.csv)."
+          fi
+
           cat >> $GITHUB_STEP_SUMMARY << EOF
           ## Drift Monitor Results
+
+          ${DATA_NOTE}
 
           | Metric | Value |
           |--------|-------|
           | Overall status | **${DRIFT_STATUS^^}** |
           | Drifted features | ${N_DRIFTED} |
           | Drift share | ${DRIFT_SHARE} |
+          | Data source | $([ "$USED_SYNTHETIC" = "true" ] && echo "Synthetic" || echo "Real") |
           | Model | LightGBM (production) |
-          | Reference dataset | data/processed/train.csv |
-          | Current dataset | data/processed/test.csv |
 
-          ### Fairness Snapshot (card6 — primary attribute)
+          ### Reference: Module 5 Fairness Findings (card6 — primary attribute)
+          _Static reference from this project's real, already-published fairness analysis —
+          not recomputed by this run; independent of the drift result above._
+
           | Group | Selection Rate | TPR | FPR | F1 |
           |-------|---------------|-----|-----|----|
           | debit (reference) | 1.41% | 33.6% | 0.58% | 0.431 |
@@ -305,31 +324,51 @@ jobs:
            needs.drift-monitor.outputs.drift_status == 'critical')
         uses: actions/github-script@v7
         env:
-          DRIFT_STATUS: ${{ needs.drift-monitor.outputs.drift_status }}
-          N_DRIFTED:    ${{ needs.drift-monitor.outputs.n_drifted }}
+          DRIFT_STATUS:   ${{ needs.drift-monitor.outputs.drift_status }}
+          N_DRIFTED:      ${{ needs.drift-monitor.outputs.n_drifted }}
+          USED_SYNTHETIC: ${{ needs.drift-monitor.outputs.used_synthetic }}
         with:
           script: |
-            const status   = process.env.DRIFT_STATUS.toUpperCase();
-            const nDrifted = process.env.N_DRIFTED;
+            const status    = process.env.DRIFT_STATUS.toUpperCase();
+            const nDrifted  = process.env.N_DRIFTED;
+            const synthetic = process.env.USED_SYNTHETIC === 'true';
+
+            const body = synthetic
+              ? [
+                  `## ⚠️ Drift Monitor — ${status} (synthetic data)`,
+                  ``,
+                  `data/processed/*.csv is gitignored and not present in this checkout, so this`,
+                  `run compared two independently-generated synthetic datasets. The ${nDrifted}`,
+                  `"drifted" features reflect synthetic sampling noise, not real production drift --`,
+                  `**no action needed.**`,
+                  ``,
+                  `Run ID: \`${context.runId}\``,
+                ]
+              : [
+                  `## ⚠️ Drift Monitor — ${status}`,
+                  ``,
+                  `The MLOps pipeline detected **${nDrifted} drifted features** between the`,
+                  `training baseline and the current dataset (real processed data).`,
+                  ``,
+                  `**Recommended action:** Review \`reports_m5/drift_report.html\` and consider`,
+                  `retraining the LightGBM production model if drift persists across multiple runs.`,
+                  ``,
+                  `Run ID: \`${context.runId}\``,
+                ];
+
             await github.rest.issues.createComment({
               issue_number: context.issue.number,
               owner:        context.repo.owner,
               repo:         context.repo.repo,
-              body: [
-                `## ⚠️ Drift Monitor — ${status}`,
-                ``,
-                `The MLOps pipeline detected **${nDrifted} drifted features** between the`,
-                `training baseline and the current dataset.`,
-                ``,
-                `**Recommended action:** Review \`reports_m5/drift_report.html\` and consider`,
-                `retraining the LightGBM production model if drift persists across multiple runs.`,
-                ``,
-                `Run ID: \`${context.runId}\``,
-              ].join('\n'),
+              body: body.join('\n'),
             });
 
       - name: Fail pipeline if critical drift
-        if: needs.drift-monitor.outputs.drift_status == 'critical'
+        if: >
+          needs.drift-monitor.outputs.drift_status == 'critical' &&
+          needs.drift-monitor.outputs.used_synthetic != 'true'
+        env:
+          N_DRIFTED: ${{ needs.drift-monitor.outputs.n_drifted }}
         run: |
-          echo "::error title=Critical Drift::${N_DRIFTED} features drifted beyond the critical threshold."
+          echo "::error title=Critical Drift::${N_DRIFTED} features drifted beyond the critical threshold (real data)."
           exit 1
