@@ -1,0 +1,275 @@
+{
+  "upload_timestamp_utc": "2026-07-08T21:18:47.898613+00:00",
+  "dry_run": true,
+  "container": "worm-audit-logs",
+  "blob_prefix": "audit-logs/milestone5",
+  "retention_days": 365,
+  "legal_hold_tags": {
+    "project": "fraud-detection-ml",
+    "milestone": "milestone5",
+    "compliance": "gdpr-hipaa-iso27001",
+    "hold_type": "worm-audit",
+    "uploaded_by": "mlops-pipeline"
+  },
+  "total_files": 32,
+  "uploaded": 32,
+  "failed": 0,
+  "files": [
+    {
+      "blob_name": "audit-logs/milestone5/reports_m5/bias_findings.md",
+      "source_file": "C:\\Users\\LOQ\\OneDrive - Arab Academy for Science and Technology\\DEPI Grad Project\\Secure-Compliant-ML-Security--main\\Secure-Compliant-ML-Security--main\\reports_m5\\bias_findings.md",
+      "file_size_bytes": 3915,
+      "sha256": "cca4d55736efe589184db1385c5aba8c20e22c0432e3cf29d2797edd0d302806",
+      "upload_timestamp": "2026-07-08T21:18:47.898613+00:00",
+      "dry_run": true
+    },
+    {
+      "blob_name": "audit-logs/milestone5/reports_m5/dp_model_comparison/dp_fairness_summary.json",
+      "source_file": "C:\\Users\\LOQ\\OneDrive - Arab Academy for Science and Technology\\DEPI Grad Project\\Secure-Compliant-ML-Security--main\\Secure-Compliant-ML-Security--main\\reports_m5\\dp_model_comparison\\dp_fairness_summary.json",
+      "file_size_bytes": 3717,
+      "sha256": "97343125f9c76ec69b643c71285aa45194c64d078a19d336e2fae1e116affd35",
+      "upload_timestamp": "2026-07-08T21:18:47.898613+00:00",
+      "dry_run": true
+    },
+    {
+      "blob_name": "audit-logs/milestone5/reports_m5/drift_report.html",
+      "source_file": "C:\\Users\\LOQ\\OneDrive - Arab Academy for Science and Technology\\DEPI Grad Project\\Secure-Compliant-ML-Security--main\\Secure-Compliant-ML-Security--main\\reports_m5\\drift_report.html",
+      "file_size_bytes": 8145943,
+      "sha256": "8181d9de7b5c3af613e7948d31b9d302c7f0c03b83cfe82105f1c3ec454cfb2e",
+      "upload_timestamp": "2026-07-08T21:18:47.898613+00:00",
+      "dry_run": true
+    },
+    {
+      "blob_name": "audit-logs/milestone5/reports_m5/drift_status.json",
+      "source_file": "C:\\Users\\LOQ\\OneDrive - Arab Academy for Science and Technology\\DEPI Grad Project\\Secure-Compliant-ML-Security--main\\Secure-Compliant-ML-Security--main\\reports_m5\\drift_status.json",
+      "file_size_bytes": 873,
+      "sha256": "d70ebd69725730f38def0a92d040e1d7d1aadae3041c12239483d1ffd2f682dc",
+      "upload_timestamp": "2026-07-08T21:18:47.898613+00:00",
+      "dry_run": true
+    },
+    {
+      "blob_name": "audit-logs/milestone5/reports_m5/drift_summary.csv",
+      "source_file": "C:\\Users\\LOQ\\OneDrive - Arab Academy for Science and Technology\\DEPI Grad Project\\Secure-Compliant-ML-Security--main\\Secure-Compliant-ML-Security--main\\reports_m5\\drift_summary.csv",
+      "file_size_bytes": 44,
+      "sha256": "3eec2e5ec668e3b66912266dfe3f4c2247187f70a2645b52ed2c9fd1209a6766",
+      "upload_timestamp": "2026-07-08T21:18:47.898613+00:00",
+      "dry_run": true
+    },
+    {
+      "blob_name": "audit-logs/milestone5/reports_m5/fairness_metrics.csv",
+      "source_file": "C:\\Users\\LOQ\\OneDrive - Arab Academy for Science and Technology\\DEPI Grad Project\\Secure-Compliant-ML-Security--main\\Secure-Compliant-ML-Security--main\\reports_m5\\fairness_metrics.csv",
+      "file_size_bytes": 1730,
+      "sha256": "da8b3a5342330b12d531a5fc3773ebeb700d82dcde48f7269671ea5967ccccb8",
+      "upload_timestamp": "2026-07-08T21:18:47.898613+00:00",
+      "dry_run": true
+    },
+    {
+      "blob_name": "audit-logs/milestone5/reports_m5/fairness_report.md",
+      "source_file": "C:\\Users\\LOQ\\OneDrive - Arab Academy for Science and Technology\\DEPI Grad Project\\Secure-Compliant-ML-Security--main\\Secure-Compliant-ML-Security--main\\reports_m5\\fairness_report.md",
+      "file_size_bytes": 8677,
+      "sha256": "10269f87ecb032aeba3ff0bd4fc63c7e0e23d97a9fac093aec61358715edff09",
+      "upload_timestamp": "2026-07-08T21:18:47.898613+00:00",
+      "dry_run": true
+    },
+    {
+      "blob_name": "audit-logs/milestone5/reports_m5/fairness_summary.json",
+      "source_file": "C:\\Users\\LOQ\\OneDrive - Arab Academy for Science and Technology\\DEPI Grad Project\\Secure-Compliant-ML-Security--main\\Secure-Compliant-ML-Security--main\\reports_m5\\fairness_summary.json",
+      "file_size_bytes": 242,
+      "sha256": "03b2d06785643e3d5ce67e646cfee670f3ce3b5e0b2a1601e8fa7e961b7c6237",
+      "upload_timestamp": "2026-07-08T21:18:47.898613+00:00",
+      "dry_run": true
+    },
+    {
+      "blob_name": "audit-logs/milestone5/reports_m5/group_metrics.csv",
+      "source_file": "C:\\Users\\LOQ\\OneDrive - Arab Academy for Science and Technology\\DEPI Grad Project\\Secure-Compliant-ML-Security--main\\Secure-Compliant-ML-Security--main\\reports_m5\\group_metrics.csv",
+      "file_size_bytes": 3644,
+      "sha256": "436df224a7a57933d0dd57d56ed9feb20c61da6de887e3fa5cfd853e9652131a",
+      "upload_timestamp": "2026-07-08T21:18:47.898613+00:00",
+      "dry_run": true
+    },
+    {
+      "blob_name": "audit-logs/milestone5/reports_m4/dp_report.md",
+      "source_file": "C:\\Users\\LOQ\\OneDrive - Arab Academy for Science and Technology\\DEPI Grad Project\\Secure-Compliant-ML-Security--main\\Secure-Compliant-ML-Security--main\\reports_m4\\dp_report.md",
+      "file_size_bytes": 7288,
+      "sha256": "a87997f8a0816a321e8a67cd5b7ae339c9744ddc435c6b0498f64c42bf7f92a6",
+      "upload_timestamp": "2026-07-08T21:18:47.898613+00:00",
+      "dry_run": true
+    },
+    {
+      "blob_name": "audit-logs/milestone5/reports_m4/investigation/all_experiments_combined.csv",
+      "source_file": "C:\\Users\\LOQ\\OneDrive - Arab Academy for Science and Technology\\DEPI Grad Project\\Secure-Compliant-ML-Security--main\\Secure-Compliant-ML-Security--main\\reports_m4\\investigation\\all_experiments_combined.csv",
+      "file_size_bytes": 9968,
+      "sha256": "203e9c7991749054275ee4090414e201fbf5c71f743dbdc75e8d14ad4f68fe4a",
+      "upload_timestamp": "2026-07-08T21:18:47.898613+00:00",
+      "dry_run": true
+    },
+    {
+      "blob_name": "audit-logs/milestone5/reports_m4/investigation/INVESTIGATION_REPORT.md",
+      "source_file": "C:\\Users\\LOQ\\OneDrive - Arab Academy for Science and Technology\\DEPI Grad Project\\Secure-Compliant-ML-Security--main\\Secure-Compliant-ML-Security--main\\reports_m4\\investigation\\INVESTIGATION_REPORT.md",
+      "file_size_bytes": 10506,
+      "sha256": "ea270a958b5a24662cede66d3383a223e5868cfa2e5de301bac720a4d0fd4b3e",
+      "upload_timestamp": "2026-07-08T21:18:47.898613+00:00",
+      "dry_run": true
+    },
+    {
+      "blob_name": "audit-logs/milestone5/reports_m4/investigation/investigation_summary.json",
+      "source_file": "C:\\Users\\LOQ\\OneDrive - Arab Academy for Science and Technology\\DEPI Grad Project\\Secure-Compliant-ML-Security--main\\Secure-Compliant-ML-Security--main\\reports_m4\\investigation\\investigation_summary.json",
+      "file_size_bytes": 379,
+      "sha256": "68f81ced8185495a8bc29e7210922420ca454a74145d358704f638872412ee50",
+      "upload_timestamp": "2026-07-08T21:18:47.898613+00:00",
+      "dry_run": true
+    },
+    {
+      "blob_name": "audit-logs/milestone5/reports_m4/investigation/phase0_gradient_norm_diagnostic.csv",
+      "source_file": "C:\\Users\\LOQ\\OneDrive - Arab Academy for Science and Technology\\DEPI Grad Project\\Secure-Compliant-ML-Security--main\\Secure-Compliant-ML-Security--main\\reports_m4\\investigation\\phase0_gradient_norm_diagnostic.csv",
+      "file_size_bytes": 385,
+      "sha256": "f6679bdd3df6a3111859832a2cac0c3ab245109864607060ee77462ee0783089",
+      "upload_timestamp": "2026-07-08T21:18:47.898613+00:00",
+      "dry_run": true
+    },
+    {
+      "blob_name": "audit-logs/milestone5/reports_m4/investigation/phaseA_l2_norm_clip_sweep.csv",
+      "source_file": "C:\\Users\\LOQ\\OneDrive - Arab Academy for Science and Technology\\DEPI Grad Project\\Secure-Compliant-ML-Security--main\\Secure-Compliant-ML-Security--main\\reports_m4\\investigation\\phaseA_l2_norm_clip_sweep.csv",
+      "file_size_bytes": 4874,
+      "sha256": "69e56b6f9556a426e66b53dca81571176e25a5ef5ea35a277e3880df7b8e8b41",
+      "upload_timestamp": "2026-07-08T21:18:47.898613+00:00",
+      "dry_run": true
+    },
+    {
+      "blob_name": "audit-logs/milestone5/reports_m4/investigation/phaseB_class_weight_ablation.csv",
+      "source_file": "C:\\Users\\LOQ\\OneDrive - Arab Academy for Science and Technology\\DEPI Grad Project\\Secure-Compliant-ML-Security--main\\Secure-Compliant-ML-Security--main\\reports_m4\\investigation\\phaseB_class_weight_ablation.csv",
+      "file_size_bytes": 2235,
+      "sha256": "74a89211461b0ad6b4dfe433ac47dd2ed87a578fd76c96fbc815c963920f326a",
+      "upload_timestamp": "2026-07-08T21:18:47.898613+00:00",
+      "dry_run": true
+    },
+    {
+      "blob_name": "audit-logs/milestone5/reports_m4/investigation/phaseC_learning_rate_sweep.csv",
+      "source_file": "C:\\Users\\LOQ\\OneDrive - Arab Academy for Science and Technology\\DEPI Grad Project\\Secure-Compliant-ML-Security--main\\Secure-Compliant-ML-Security--main\\reports_m4\\investigation\\phaseC_learning_rate_sweep.csv",
+      "file_size_bytes": 3447,
+      "sha256": "187cf375e4bcc89ed6ccd587b614b4a4feb71c262b108633c52f26e476f8bde5",
+      "upload_timestamp": "2026-07-08T21:18:47.898613+00:00",
+      "dry_run": true
+    },
+    {
+      "blob_name": "audit-logs/milestone5/reports_m4/investigation/phaseD_noise_multiplier_recovery_sweep.csv",
+      "source_file": "C:\\Users\\LOQ\\OneDrive - Arab Academy for Science and Technology\\DEPI Grad Project\\Secure-Compliant-ML-Security--main\\Secure-Compliant-ML-Security--main\\reports_m4\\investigation\\phaseD_noise_multiplier_recovery_sweep.csv",
+      "file_size_bytes": 4242,
+      "sha256": "41808cec009e61f439aa2b29219df95e07f5615ad9b0cde5a511b9df6a71234d",
+      "upload_timestamp": "2026-07-08T21:18:47.898613+00:00",
+      "dry_run": true
+    },
+    {
+      "blob_name": "audit-logs/milestone5/reports_m4/investigation/phaseE_full_data_confirmation.csv",
+      "source_file": "C:\\Users\\LOQ\\OneDrive - Arab Academy for Science and Technology\\DEPI Grad Project\\Secure-Compliant-ML-Security--main\\Secure-Compliant-ML-Security--main\\reports_m4\\investigation\\phaseE_full_data_confirmation.csv",
+      "file_size_bytes": 1687,
+      "sha256": "b2212fc6b8d7363bc96bbe29d24fdd305d2b7529891295d1e8cabdf63b17f362",
+      "upload_timestamp": "2026-07-08T21:18:47.898613+00:00",
+      "dry_run": true
+    },
+    {
+      "blob_name": "audit-logs/milestone5/reports_m4/investigation/phaseF_control_experiments.csv",
+      "source_file": "C:\\Users\\LOQ\\OneDrive - Arab Academy for Science and Technology\\DEPI Grad Project\\Secure-Compliant-ML-Security--main\\Secure-Compliant-ML-Security--main\\reports_m4\\investigation\\phaseF_control_experiments.csv",
+      "file_size_bytes": 764,
+      "sha256": "c49a6551f7652699a4947cebdc3a48d71aa48bbd368d30bb9b21dc3abe32052e",
+      "upload_timestamp": "2026-07-08T21:18:47.898613+00:00",
+      "dry_run": true
+    },
+    {
+      "blob_name": "audit-logs/milestone5/reports_m4/privacy_utility_sweep.csv",
+      "source_file": "C:\\Users\\LOQ\\OneDrive - Arab Academy for Science and Technology\\DEPI Grad Project\\Secure-Compliant-ML-Security--main\\Secure-Compliant-ML-Security--main\\reports_m4\\privacy_utility_sweep.csv",
+      "file_size_bytes": 356,
+      "sha256": "ce0207aa16012d7941b2ada39f8238fcb2fca3e2e4efa225eda88aafe1282d97",
+      "upload_timestamp": "2026-07-08T21:18:47.898613+00:00",
+      "dry_run": true
+    },
+    {
+      "blob_name": "audit-logs/milestone5/compliance/checklists/compliance_register.xlsx",
+      "source_file": "C:\\Users\\LOQ\\OneDrive - Arab Academy for Science and Technology\\DEPI Grad Project\\Secure-Compliant-ML-Security--main\\Secure-Compliant-ML-Security--main\\compliance\\checklists\\compliance_register.xlsx",
+      "file_size_bytes": 5306,
+      "sha256": "f05518c7480c27b50ff451e15420bc8532c48eed1088ddaa4dade4df929dd09f",
+      "upload_timestamp": "2026-07-08T21:18:47.898613+00:00",
+      "dry_run": true
+    },
+    {
+      "blob_name": "audit-logs/milestone5/compliance/compliance_certificate.txt",
+      "source_file": "C:\\Users\\LOQ\\OneDrive - Arab Academy for Science and Technology\\DEPI Grad Project\\Secure-Compliant-ML-Security--main\\Secure-Compliant-ML-Security--main\\compliance\\compliance_certificate.txt",
+      "file_size_bytes": 755,
+      "sha256": "c39d6f7ab44e60582989bf8a632cdb939c273dfbba2f4b23ee945cf51a972ea2",
+      "upload_timestamp": "2026-07-08T21:18:47.898613+00:00",
+      "dry_run": true
+    },
+    {
+      "blob_name": "audit-logs/milestone5/compliance/README.md",
+      "source_file": "C:\\Users\\LOQ\\OneDrive - Arab Academy for Science and Technology\\DEPI Grad Project\\Secure-Compliant-ML-Security--main\\Secure-Compliant-ML-Security--main\\compliance\\README.md",
+      "file_size_bytes": 2884,
+      "sha256": "4ba1041cad20c9cc7b7a4930a409355ecd18c2832d6042a4f21e4e0b9feb6260",
+      "upload_timestamp": "2026-07-08T21:18:47.898613+00:00",
+      "dry_run": true
+    },
+    {
+      "blob_name": "audit-logs/milestone5/compliance/reports/compliance_audit_report.md",
+      "source_file": "C:\\Users\\LOQ\\OneDrive - Arab Academy for Science and Technology\\DEPI Grad Project\\Secure-Compliant-ML-Security--main\\Secure-Compliant-ML-Security--main\\compliance\\reports\\compliance_audit_report.md",
+      "file_size_bytes": 518,
+      "sha256": "b96c56b766d9f777fdf16f01fe227837192a2a8379ff022abc6ec1a9181a549c",
+      "upload_timestamp": "2026-07-08T21:18:47.898613+00:00",
+      "dry_run": true
+    },
+    {
+      "blob_name": "audit-logs/milestone5/compliance/reports/security_review_report.md",
+      "source_file": "C:\\Users\\LOQ\\OneDrive - Arab Academy for Science and Technology\\DEPI Grad Project\\Secure-Compliant-ML-Security--main\\Secure-Compliant-ML-Security--main\\compliance\\reports\\security_review_report.md",
+      "file_size_bytes": 385,
+      "sha256": "595c5cf4e8f27c5e2cf1348b02f04a64e3806b4fdde42f14244ffc6756ce17fd",
+      "upload_timestamp": "2026-07-08T21:18:47.898613+00:00",
+      "dry_run": true
+    },
+    {
+      "blob_name": "audit-logs/milestone5/reports/access_control.csv",
+      "source_file": "C:\\Users\\LOQ\\OneDrive - Arab Academy for Science and Technology\\DEPI Grad Project\\Secure-Compliant-ML-Security--main\\Secure-Compliant-ML-Security--main\\reports\\access_control.csv",
+      "file_size_bytes": 143,
+      "sha256": "174f58631acb3f7d11ba6e1d276eae7bb453d6fa93efd7b502980cf9a2f9deb7",
+      "upload_timestamp": "2026-07-08T21:18:47.898613+00:00",
+      "dry_run": true
+    },
+    {
+      "blob_name": "audit-logs/milestone5/reports/data_classification.csv",
+      "source_file": "C:\\Users\\LOQ\\OneDrive - Arab Academy for Science and Technology\\DEPI Grad Project\\Secure-Compliant-ML-Security--main\\Secure-Compliant-ML-Security--main\\reports\\data_classification.csv",
+      "file_size_bytes": 260,
+      "sha256": "f4165c0eb7655dc601d6373b8cf1e6ccdc3d58bec34ed849bdc5244eaeab420d",
+      "upload_timestamp": "2026-07-08T21:18:47.898613+00:00",
+      "dry_run": true
+    },
+    {
+      "blob_name": "audit-logs/milestone5/reports/data_lineage.csv",
+      "source_file": "C:\\Users\\LOQ\\OneDrive - Arab Academy for Science and Technology\\DEPI Grad Project\\Secure-Compliant-ML-Security--main\\Secure-Compliant-ML-Security--main\\reports\\data_lineage.csv",
+      "file_size_bytes": 258,
+      "sha256": "276284ffc5cf599def82d9936865292288226807eedde43e58416f9df434c460",
+      "upload_timestamp": "2026-07-08T21:18:47.898613+00:00",
+      "dry_run": true
+    },
+    {
+      "blob_name": "audit-logs/milestone5/reports/DPIA_Report.csv",
+      "source_file": "C:\\Users\\LOQ\\OneDrive - Arab Academy for Science and Technology\\DEPI Grad Project\\Secure-Compliant-ML-Security--main\\Secure-Compliant-ML-Security--main\\reports\\DPIA_Report.csv",
+      "file_size_bytes": 104,
+      "sha256": "37c25fff6e07911d9870635c9fe02ace510752c873a1471994ff7f2d9e02dac5",
+      "upload_timestamp": "2026-07-08T21:18:47.898613+00:00",
+      "dry_run": true
+    },
+    {
+      "blob_name": "audit-logs/milestone5/reports/key_management.csv",
+      "source_file": "C:\\Users\\LOQ\\OneDrive - Arab Academy for Science and Technology\\DEPI Grad Project\\Secure-Compliant-ML-Security--main\\Secure-Compliant-ML-Security--main\\reports\\key_management.csv",
+      "file_size_bytes": 106,
+      "sha256": "34f71c867342345bf6a328e1cfb11019b36b2711fa6d05f509557fafcdab0331",
+      "upload_timestamp": "2026-07-08T21:18:47.898613+00:00",
+      "dry_run": true
+    },
+    {
+      "blob_name": "audit-logs/milestone5/reports/security_preprocessing_docs.csv",
+      "source_file": "C:\\Users\\LOQ\\OneDrive - Arab Academy for Science and Technology\\DEPI Grad Project\\Secure-Compliant-ML-Security--main\\Secure-Compliant-ML-Security--main\\reports\\security_preprocessing_docs.csv",
+      "file_size_bytes": 236,
+      "sha256": "24a83f86624a459702c0ac8574cef2a39a114f849eaaddff3afa384969acf5ae",
+      "upload_timestamp": "2026-07-08T21:18:47.898613+00:00",
+      "dry_run": true
+    }
+  ]
+}

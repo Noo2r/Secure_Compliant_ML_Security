@@ -1,0 +1,18 @@
+{
+  "timestamp_utc": "2026-07-08T21:18:05.215267+00:00",
+  "model": "lightgbm",
+  "reference_dataset": "C:\\Users\\LOQ\\OneDrive - Arab Academy for Science and Technology\\DEPI Grad Project\\Secure-Compliant-ML-Security--main\\Secure-Compliant-ML-Security--main\\data\\processed\\train.csv",
+  "current_dataset": "C:\\Users\\LOQ\\OneDrive - Arab Academy for Science and Technology\\DEPI Grad Project\\Secure-Compliant-ML-Security--main\\Secure-Compliant-ML-Security--main\\data\\processed\\test.csv",
+  "synthetic_data_used": false,
+  "dataset_drift_detected": false,
+  "drift_share": 0.5,
+  "n_drifted_features": 42,
+  "n_monitored_features": 203,
+  "overall_status": "critical",
+  "thresholds": {
+    "warning": 0.1,
+    "critical": 0.2
+  },
+  "action_required": true,
+  "recommended_action": "Schedule model retraining \u2014 critical drift detected."
+}

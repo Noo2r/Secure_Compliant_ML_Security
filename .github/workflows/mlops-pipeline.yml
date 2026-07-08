@@ -1,0 +1,303 @@
+# =============================================================================
+# Milestone 5 — MLOps CI/CD Pipeline
+# IEEE-CIS Fraud Detection | Secure & Compliant ML System
+#
+# Triggers on any push that touches model artifacts (M2/M3) or monitoring code.
+# Runs three sequential jobs:
+#   1. drift-monitor   — Evidently drift detection; fails pipeline if critical
+#   2. worm-upload     — Upload reports to Azure immutable storage (main only)
+#   3. alert-on-drift  — Annotate the PR / post a summary if drift is detected
+# =============================================================================
+
+name: MLOps Pipeline — Drift Monitoring & WORM Compliance
+
+on:
+  push:
+    branches: ["main", "develop", "feature/**"]
+    paths:
+      - "artifacts_m2/**"
+      - "artifacts_m3/**"
+      - "data/processed/**"
+      - "drift_monitor.py"
+      - "worm_storage.py"
+      - ".github/workflows/mlops-pipeline.yml"
+  pull_request:
+    branches: ["main"]
+    paths:
+      - "artifacts_m2/**"
+      - "artifacts_m3/**"
+  schedule:
+    # Daily monitoring run at 02:00 UTC to catch silent drift between pushes.
+    - cron: "0 2 * * *"
+  workflow_dispatch:
+    inputs:
+      dry_run_worm:
+        description: "WORM upload dry-run (true = list files only, false = upload)"
+        required: false
+        default: "false"
+
+env:
+  PYTHON_VERSION: "3.11"
+
+# Cancel in-flight runs on the same branch when a new push arrives.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+# ---------------------------------------------------------------------------
+# JOB 1 — DRIFT MONITORING
+# ---------------------------------------------------------------------------
+jobs:
+  drift-monitor:
+    name: "Drift Monitor (Evidently)"
+    runs-on: ubuntu-latest
+    # NOTE: no `defaults.run.working-directory` override -- actions/checkout
+    # puts this repo's contents directly at the runner workspace root, so
+    # drift_monitor.py (also at repo root) and its default paths
+    # (data/processed/..., reports_m2/...) resolve correctly with no
+    # subdirectory assumption. The original working-directory value
+    # ("Secure_Compliant_ML_Security-main") was a local unzipped-folder name
+    # that doesn't exist in a real GitHub Actions checkout.
+
+    outputs:
+      drift_status: ${{ steps.read-status.outputs.drift_status }}
+      n_drifted:    ${{ steps.read-status.outputs.n_drifted }}
+      drift_share:  ${{ steps.read-status.outputs.drift_share }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python ${{ env.PYTHON_VERSION }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements-milestone5.txt
+
+      - name: Verify required artifact paths exist
+        run: |
+          echo "=== Checking required artifacts ==="
+          python - <<'EOF'
+          import sys
+          from pathlib import Path
+
+          required = [
+              "data/processed/train.csv",
+              "data/processed/test.csv",
+              "reports_m2/feature_manifest.json",
+              "artifacts_m3/lightgbm_inference_bundle.joblib",
+          ]
+          missing = [p for p in required if not Path(p).exists()]
+          if missing:
+              print("MISSING ARTIFACTS:")
+              for m in missing:
+                  print(f"  ✗ {m}")
+              print("\nRun Module 2 and Module 3 scripts first, then re-push.")
+              sys.exit(1)
+          else:
+              print("All required artifacts present:")
+              for p in required:
+                  size = Path(p).stat().st_size
+                  print(f"  ✓ {p}  ({size:,} bytes)")
+          EOF
+
+      - name: Run drift monitor
+        id: drift-run
+        run: |
+          python drift_monitor.py \
+            --reference data/processed/train.csv \
+            --current   data/processed/test.csv \
+            --features  reports_m2/feature_manifest.json \
+            --output    reports_m5
+        # --features now has a real effect (loads the actual Module 2
+        # selected-feature list) -- the original invocation passed this same
+        # flag, but argparse never defined it, which would have crashed with
+        # "unrecognized arguments" on every run. Fixed by adding real support
+        # for it in drift_monitor.py instead of just deleting the flag.
+        # Exit code 1 = critical drift.  We capture the outcome without
+        # immediately failing the step so we can upload the reports first.
+        continue-on-error: true
+
+      - name: Read drift status
+        id: read-status
+        run: |
+          STATUS_FILE="reports_m5/drift_status.json"
+          if [ -f "$STATUS_FILE" ]; then
+            DRIFT_STATUS=$(python -c "import json; d=json.load(open('$STATUS_FILE')); print(d.get('overall_status','unknown'))")
+            N_DRIFTED=$(python -c "import json; d=json.load(open('$STATUS_FILE')); print(d.get('n_drifted_features',0))")
+            DRIFT_SHARE=$(python -c "import json; d=json.load(open('$STATUS_FILE')); print(d.get('drift_share',0.0))")
+          else
+            DRIFT_STATUS="unknown"
+            N_DRIFTED="0"
+            DRIFT_SHARE="0.0"
+          fi
+          echo "drift_status=$DRIFT_STATUS"  >> $GITHUB_OUTPUT
+          echo "n_drifted=$N_DRIFTED"        >> $GITHUB_OUTPUT
+          echo "drift_share=$DRIFT_SHARE"    >> $GITHUB_OUTPUT
+          echo "Drift status: $DRIFT_STATUS  |  Drifted features: $N_DRIFTED  |  Share: $DRIFT_SHARE"
+
+      - name: Upload drift reports as GitHub artifacts
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: drift-reports-${{ github.run_id }}
+          path: |
+            reports_m5/drift_report.html
+            reports_m5/drift_summary.csv
+            reports_m5/drift_status.json
+            reports_m5/fairness_report.md
+            reports_m5/fairness_metrics.csv
+            reports_m5/bias_findings.md
+          retention-days: 90
+
+      - name: Fail pipeline on critical drift
+        if: steps.drift-run.outcome == 'failure'
+        run: |
+          echo "::error title=Critical Drift Detected::The drift monitor returned exit code 1."
+          echo "Review reports_m5/drift_report.html and consider retraining the LightGBM model."
+          exit 1
+
+  # ---------------------------------------------------------------------------
+  # JOB 2 — WORM STORAGE UPLOAD (main branch only)
+  # ---------------------------------------------------------------------------
+  worm-upload:
+    name: "WORM Storage Upload (Azure)"
+    runs-on: ubuntu-latest
+    needs: drift-monitor
+    # Only upload from the main branch, and only if drift monitoring passed.
+    if: >
+      github.ref == 'refs/heads/main' &&
+      (needs.drift-monitor.result == 'success' || github.event_name == 'schedule')
+
+    environment: production   # requires manual approval for production deployments
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python ${{ env.PYTHON_VERSION }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+
+      - name: Install Azure SDK
+        run: |
+          python -m pip install --upgrade pip
+          pip install azure-storage-blob>=12.19 azure-identity>=1.16
+
+      - name: Download drift reports artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: drift-reports-${{ github.run_id }}
+          path: reports_m5
+
+      - name: Upload audit reports to WORM storage
+        env:
+          AZURE_STORAGE_CONNECTION_STRING: ${{ secrets.AZURE_STORAGE_CONNECTION_STRING }}
+          AZURE_STORAGE_ACCOUNT_NAME:      ${{ secrets.AZURE_STORAGE_ACCOUNT_NAME }}
+          AZURE_STORAGE_CONTAINER_NAME:    ${{ secrets.AZURE_STORAGE_CONTAINER_NAME }}
+          AZURE_TENANT_ID:                 ${{ secrets.AZURE_TENANT_ID }}
+          AZURE_CLIENT_ID:                 ${{ secrets.AZURE_CLIENT_ID }}
+          AZURE_CLIENT_SECRET:             ${{ secrets.AZURE_CLIENT_SECRET }}
+        run: |
+          DRY_RUN_FLAG=""
+          if [ "${{ github.event.inputs.dry_run_worm }}" = "true" ]; then
+            DRY_RUN_FLAG="--dry-run"
+            echo "::notice::Running WORM upload in DRY-RUN mode."
+          fi
+          python worm_storage.py $DRY_RUN_FLAG
+
+      - name: Upload WORM manifest as artifact
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: worm-manifest-${{ github.run_id }}
+          path: reports_m5/worm_upload_manifest.json
+          retention-days: 365   # keep WORM manifest for the full retention period
+
+  # ---------------------------------------------------------------------------
+  # JOB 3 — ALERT ON DRIFT (always runs; annotates PR or posts summary)
+  # ---------------------------------------------------------------------------
+  alert-on-drift:
+    name: "Drift Alert"
+    runs-on: ubuntu-latest
+    needs: drift-monitor
+    if: always()
+
+    steps:
+      - name: Post drift summary to job summary
+        env:
+          DRIFT_STATUS: ${{ needs.drift-monitor.outputs.drift_status }}
+          N_DRIFTED:    ${{ needs.drift-monitor.outputs.n_drifted }}
+          DRIFT_SHARE:  ${{ needs.drift-monitor.outputs.drift_share }}
+        run: |
+          # Write a structured summary to the GitHub Actions job summary page.
+          cat >> $GITHUB_STEP_SUMMARY << EOF
+          ## Drift Monitor Results
+
+          | Metric | Value |
+          |--------|-------|
+          | Overall status | **${DRIFT_STATUS^^}** |
+          | Drifted features | ${N_DRIFTED} |
+          | Drift share | ${DRIFT_SHARE} |
+          | Model | LightGBM (production) |
+          | Reference dataset | data/processed/train.csv |
+          | Current dataset | data/processed/test.csv |
+
+          ### Fairness Snapshot (card6 — primary attribute)
+          | Group | Selection Rate | TPR | FPR | F1 |
+          |-------|---------------|-----|-----|----|
+          | debit (reference) | 1.41% | 33.6% | 0.58% | 0.431 |
+          | credit            | 5.65% | 52.5% | 2.42% | 0.560 |
+
+          - SPD (credit vs debit): **+0.0424** (95% CI [+0.0395, +0.0453]) — **statistically significant**
+          - DIR: **3.996** — exceeds four-fifths-rule threshold (≥ 0.8)
+          - EOD: **+0.1890** — above ±0.10 threshold → **flagged**
+
+          > Full report: [drift_report.html](../actions/runs/${{ github.run_id }})
+
+          EOF
+
+      - name: Annotate PR with drift warning
+        if: >
+          github.event_name == 'pull_request' &&
+          (needs.drift-monitor.outputs.drift_status == 'warning' ||
+           needs.drift-monitor.outputs.drift_status == 'critical')
+        uses: actions/github-script@v7
+        env:
+          DRIFT_STATUS: ${{ needs.drift-monitor.outputs.drift_status }}
+          N_DRIFTED:    ${{ needs.drift-monitor.outputs.n_drifted }}
+        with:
+          script: |
+            const status   = process.env.DRIFT_STATUS.toUpperCase();
+            const nDrifted = process.env.N_DRIFTED;
+            await github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner:        context.repo.owner,
+              repo:         context.repo.repo,
+              body: [
+                `## ⚠️ Drift Monitor — ${status}`,
+                ``,
+                `The MLOps pipeline detected **${nDrifted} drifted features** between the`,
+                `training baseline and the current dataset.`,
+                ``,
+                `**Recommended action:** Review \`reports_m5/drift_report.html\` and consider`,
+                `retraining the LightGBM production model if drift persists across multiple runs.`,
+                ``,
+                `Run ID: \`${context.runId}\``,
+              ].join('\n'),
+            });
+
+      - name: Fail pipeline if critical drift
+        if: needs.drift-monitor.outputs.drift_status == 'critical'
+        run: |
+          echo "::error title=Critical Drift::${N_DRIFTED} features drifted beyond the critical threshold."
+          exit 1
