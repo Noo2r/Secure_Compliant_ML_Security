@@ -75,6 +75,11 @@ jobs:
         with:
           python-version: ${{ env.PYTHON_VERSION }}
           cache: pip
+          # setup-python's pip cache defaults to globbing for a literal
+          # requirements.txt/pyproject.toml, neither of which exists in this
+          # repo (per-milestone files: requirements-milestone{2,3,4,5}.txt) --
+          # without this, the step hard-errors with "No file ... matched".
+          cache-dependency-path: requirements-milestone5.txt
 
       - name: Install dependencies
         run: |
@@ -88,24 +93,46 @@ jobs:
           import sys
           from pathlib import Path
 
-          required = [
-              "data/processed/train.csv",
-              "data/processed/test.csv",
+          # data/processed/*.csv are gitignored throughout this repo (raw and
+          # processed data are never committed, by design -- see .gitignore)
+          # and so will never be present in a fresh checkout. They're a soft
+          # requirement: drift_monitor.py already has a built-in synthetic-
+          # data fallback for exactly this case. Only the two artifacts that
+          # ARE always committed to git are hard requirements -- treating the
+          # CSVs as hard requirements too (the original check) made this step
+          # fail on every single CI run, before drift_monitor.py ever got a
+          # chance to fall back gracefully.
+          hard_required = [
               "reports_m2/feature_manifest.json",
               "artifacts_m3/lightgbm_inference_bundle.joblib",
           ]
-          missing = [p for p in required if not Path(p).exists()]
-          if missing:
-              print("MISSING ARTIFACTS:")
-              for m in missing:
+          soft_required = [
+              "data/processed/train.csv",
+              "data/processed/test.csv",
+          ]
+
+          missing_hard = [p for p in hard_required if not Path(p).exists()]
+          missing_soft = [p for p in soft_required if not Path(p).exists()]
+
+          if missing_hard:
+              print("MISSING REQUIRED ARTIFACTS:")
+              for m in missing_hard:
                   print(f"  ✗ {m}")
               print("\nRun Module 2 and Module 3 scripts first, then re-push.")
               sys.exit(1)
+
+          print("Required artifacts present:")
+          for p in hard_required:
+              size = Path(p).stat().st_size
+              print(f"  ✓ {p}  ({size:,} bytes)")
+
+          if missing_soft:
+              print("\nProcessed data CSVs not in this checkout (expected -- data/ is gitignored):")
+              for m in missing_soft:
+                  print(f"  - {m}")
+              print("drift_monitor.py will fall back to synthetic IEEE-CIS-like data.")
           else:
-              print("All required artifacts present:")
-              for p in required:
-                  size = Path(p).stat().st_size
-                  print(f"  ✓ {p}  ({size:,} bytes)")
+              print("\nProcessed data CSVs present -- drift monitor will use real data.")
           EOF
 
       - name: Run drift monitor
@@ -187,6 +214,11 @@ jobs:
         with:
           python-version: ${{ env.PYTHON_VERSION }}
           cache: pip
+          # setup-python's pip cache defaults to globbing for a literal
+          # requirements.txt/pyproject.toml, neither of which exists in this
+          # repo (per-milestone files: requirements-milestone{2,3,4,5}.txt) --
+          # without this, the step hard-errors with "No file ... matched".
+          cache-dependency-path: requirements-milestone5.txt
 
       - name: Install Azure SDK
         run: |
