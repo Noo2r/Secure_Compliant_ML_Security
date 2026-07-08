@@ -251,7 +251,21 @@ jobs:
           DRY_RUN_FLAG=""
           if [ "${{ github.event.inputs.dry_run_worm }}" = "true" ]; then
             DRY_RUN_FLAG="--dry-run"
-            echo "::notice::Running WORM upload in DRY-RUN mode."
+            echo "::notice::Running WORM upload in DRY-RUN mode (requested via workflow_dispatch input)."
+          elif [ -z "$AZURE_STORAGE_CONNECTION_STRING" ] && [ -z "$AZURE_STORAGE_ACCOUNT_NAME" ]; then
+            # No Azure Storage account has been provisioned for this project yet
+            # (same "infra not applied" status as the Milestone 3 Terraform --
+            # see docs/DEPLOYMENT.md). Attempting a real upload here always
+            # fails with "no Azure credentials found." Falling back to
+            # --dry-run lets this step still prove out real file discovery,
+            # hashing, and manifest generation against this run's actual
+            # audit reports, without hard-failing on infra that doesn't exist.
+            # Once a real Storage account + immutable-blob container exists,
+            # add AZURE_STORAGE_CONNECTION_STRING (or AZURE_STORAGE_ACCOUNT_NAME
+            # for Workload Identity) under Settings > Secrets and variables >
+            # Actions, and this will upload for real automatically.
+            DRY_RUN_FLAG="--dry-run"
+            echo "::warning title=Azure WORM Storage Not Provisioned::No AZURE_STORAGE_CONNECTION_STRING or AZURE_STORAGE_ACCOUNT_NAME secret is configured. Falling back to --dry-run."
           fi
           python worm_storage.py $DRY_RUN_FLAG
 

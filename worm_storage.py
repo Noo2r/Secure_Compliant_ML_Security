@@ -97,6 +97,21 @@ RETENTION_DAYS = 365
 # Blob name prefix inside the container (acts as a folder).
 BLOB_PREFIX = "audit-logs/milestone5"
 
+_DEFAULT_CONTAINER_NAME = "worm-audit-logs"
+
+
+def _resolve_container_name(raw_env_value: str | None) -> str:
+    """Resolves AZURE_STORAGE_CONTAINER_NAME, falling back to the default
+    whether the env var is absent OR present-but-empty.
+
+    `os.environ.get(key, default)` only applies `default` when `key` is
+    absent -- but CI environments (e.g. a GitHub Actions `env:` block mapping
+    an unset secret) commonly set the variable present with an empty string,
+    which silently defeats a plain `.get(key, default)` call and produces a
+    confusing "not set" error even though a sensible default was intended.
+    """
+    return (raw_env_value or _DEFAULT_CONTAINER_NAME).strip()
+
 
 def _require_env(name: str) -> str:
     val = os.environ.get(name, "").strip()
@@ -218,7 +233,7 @@ def run_worm_upload(dry_run: bool = False) -> int:
     # ---- Resolve credentials ----------------------------------------------
     connection_string = os.environ.get("AZURE_STORAGE_CONNECTION_STRING", "").strip()
     account_name      = os.environ.get("AZURE_STORAGE_ACCOUNT_NAME", "").strip()
-    container_name    = os.environ.get("AZURE_STORAGE_CONTAINER_NAME", "worm-audit-logs").strip()
+    container_name    = _resolve_container_name(os.environ.get("AZURE_STORAGE_CONTAINER_NAME"))
 
     if not container_name:
         logger.error("AZURE_STORAGE_CONTAINER_NAME is not set.")

@@ -8,7 +8,7 @@ real reports_m4/reports_m5/reports/compliance directories).
 """
 from pathlib import Path
 
-from worm_storage import _blob_name, _collect_files, _sha256
+from worm_storage import _blob_name, _collect_files, _resolve_container_name, _sha256
 
 
 def test_sha256_is_deterministic_and_matches_known_content(tmp_path) -> None:
@@ -54,3 +54,21 @@ def test_collect_files_skips_nonexistent_directories(tmp_path) -> None:
     missing_dir = tmp_path / "does_not_exist"
     files = _collect_files([missing_dir])
     assert files == []
+
+
+def test_resolve_container_name_falls_back_when_env_var_absent() -> None:
+    assert _resolve_container_name(None) == "worm-audit-logs"
+
+
+def test_resolve_container_name_falls_back_when_env_var_present_but_empty() -> None:
+    """Regression test: a real CI failure ('AZURE_STORAGE_CONTAINER_NAME is
+    not set') was caused by GitHub Actions always defining the env var (via
+    an `env:` block mapping an unset secret), just with an empty string --
+    plain `os.environ.get(key, default)` only applies `default` when the key
+    is truly absent, not present-but-empty, so the intended default was
+    silently skipped."""
+    assert _resolve_container_name("") == "worm-audit-logs"
+
+
+def test_resolve_container_name_uses_real_value_when_provided() -> None:
+    assert _resolve_container_name("my-real-container") == "my-real-container"
