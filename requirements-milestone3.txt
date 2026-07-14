@@ -25,3 +25,18 @@ python-dotenv==1.0.1
 # InferenceBundle is a lightgbm.LGBMClassifier. Pinned to the version it was
 # actually trained with (see requirements-milestone2.txt: lightgbm>=4.3).
 lightgbm==4.6.0
+# joblib.load() on the InferenceBundle unpickles a class defined in
+# src.models.inference_bundle. Importing that module runs src/models/__init__.py
+# and src/data/__init__.py in full (package-level imports, not lazy), which pull
+# in optuna and xgboost (src/models/model_registry.py, src/models/tune.py) and
+# Faker (src/data/secure_data_loader.py) even though prediction-serving never
+# calls any of that code directly. Without these three, a clean environment
+# with only the packages above fails at model-load time with
+# ModuleNotFoundError, not at import time — found by running the API in an
+# isolated virtual environment containing only this file's original
+# dependencies. Left unpinned (matching requirements-milestone2.txt's own
+# minimum-version style for these same three packages) since serving doesn't
+# depend on a specific optuna/xgboost/Faker version, only their presence.
+Faker>=24.0
+optuna>=3.6
+xgboost>=2.0
